@@ -1,0 +1,332 @@
+<Window x:Class="BinDiff.Gui.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:BinDiff.Gui"
+        mc:Ignorable="d"
+        Title="BinDiff — Binary Similarity Analysis" Height="780" Width="1120"
+        Background="#0F1420" TextOptions.TextFormattingMode="Display"
+        FontFamily="Segoe UI" FontSize="13">
+    <Window.Resources>
+        <SolidColorBrush x:Key="Fg" Color="#E6EBF2"/>
+        <SolidColorBrush x:Key="Muted" Color="#8B97AB"/>
+        <SolidColorBrush x:Key="Card" Color="#1A2130"/>
+        <SolidColorBrush x:Key="Accent" Color="#4F9DFF"/>
+        <SolidColorBrush x:Key="Line" Color="#2C3547"/>
+
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+        </Style>
+        <Style x:Key="MutedText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource Card}"/>
+            <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+        <Style TargetType="TextBox">
+            <Setter Property="Background" Value="#141A26"/>
+            <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="Padding" Value="4,2"/>
+            <Setter Property="Width" Value="64"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+        </Style>
+        <Style TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+            <Setter Property="Margin" Value="0,0,10,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style TargetType="TabItem">
+            <Setter Property="Background" Value="{StaticResource Card}"/>
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TabItem}">
+                        <Border x:Name="TabBorder" Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="1,1,1,0"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter ContentSource="Header" RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TabBorder" Property="Background" Value="#141A26"/>
+                                <Setter TargetName="TabBorder" Property="BorderBrush" Value="{StaticResource Accent}"/>
+                                <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="ProgressBar">
+            <Setter Property="Background" Value="#2C3547"/>
+            <Setter Property="Foreground" Value="{StaticResource Accent}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type ProgressBar}">
+                        <Border Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1" CornerRadius="2" SnapsToDevicePixels="True">
+                            <Grid x:Name="PART_Track" ClipToBounds="True">
+                                <Border x:Name="PART_Indicator" Background="{TemplateBinding Foreground}"
+                                        HorizontalAlignment="Left" CornerRadius="1"/>
+                            </Grid>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="DataGrid">
+            <Setter Property="Background" Value="#141A26"/>
+            <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+            <Setter Property="RowBackground" Value="#141A26"/>
+            <Setter Property="AlternatingRowBackground" Value="#1A2130"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource Line}"/>
+            <Setter Property="VerticalGridLinesBrush" Value="{StaticResource Line}"/>
+            <Setter Property="RowHeaderWidth" Value="0"/>
+            <Setter Property="FontFamily" Value="Consolas"/>
+        </Style>
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#0F1420"/>
+            <Setter Property="Foreground" Value="{StaticResource Muted}"/>
+            <Setter Property="Padding" Value="6,4"/>
+            <Setter Property="BorderBrush" Value="{StaticResource Line}"/>
+            <Setter Property="BorderThickness" Value="0,0,1,1"/>
+        </Style>
+        <Style TargetType="DataGridCell">
+            <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+        </Style>
+        <Style TargetType="DataGridRow">
+            <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+            <Setter Property="Background" Value="#141A26"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="#243047"/>
+                    <Setter Property="Foreground" Value="{StaticResource Fg}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <DataTemplate x:Key="MetricTemplate">
+            <Grid Margin="0,2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="230"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0" Text="{Binding Key}" Foreground="{StaticResource Muted}"/>
+                <TextBlock Grid.Column="1" Text="{Binding Value}" Foreground="{StaticResource Fg}"
+                           TextWrapping="Wrap" FontFamily="Consolas"/>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="WarnTemplate">
+            <TextBlock Text="{Binding}" Foreground="#FFB454" TextWrapping="Wrap"/>
+        </DataTemplate>
+    </Window.Resources>
+
+    <DockPanel Margin="14">
+        <Grid DockPanel.Dock="Top" Height="96">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <Border x:Name="DropA" Grid.Column="0" AllowDrop="True" Background="{StaticResource Card}"
+                    BorderBrush="{StaticResource Line}" BorderThickness="1.5" CornerRadius="10"
+                    Drop="Drop_A" DragEnter="Drop_DragEnter" DragLeave="Drop_DragLeave"
+                    MouseLeftButtonUp="Pick_A" Cursor="Hand">
+                <StackPanel VerticalAlignment="Center" Margin="16,0">
+                    <TextBlock Text="FILE A" Style="{StaticResource MutedText}"/>
+                    <TextBlock x:Name="PathA" Text="Drag a file here or click…"
+                               TextTrimming="CharacterEllipsis" FontSize="15" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="InfoA" Style="{StaticResource MutedText}"/>
+                </StackPanel>
+            </Border>
+            <TextBlock Grid.Column="1" Text="vs" VerticalAlignment="Center" Margin="16,0"
+                       Foreground="{StaticResource Muted}" FontSize="16"/>
+            <Border x:Name="DropB" Grid.Column="2" AllowDrop="True" Background="{StaticResource Card}"
+                    BorderBrush="{StaticResource Line}" BorderThickness="1.5" CornerRadius="10"
+                    Drop="Drop_B" DragEnter="Drop_DragEnter" DragLeave="Drop_DragLeave"
+                    MouseLeftButtonUp="Pick_B" Cursor="Hand">
+                <StackPanel VerticalAlignment="Center" Margin="16,0">
+                    <TextBlock Text="FILE B" Style="{StaticResource MutedText}"/>
+                    <TextBlock x:Name="PathB" Text="Drag a file here or click…"
+                               TextTrimming="CharacterEllipsis" FontSize="15" Margin="0,2,0,0"/>
+                    <TextBlock x:Name="InfoB" Style="{StaticResource MutedText}"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <Border DockPanel.Dock="Top" Background="{StaticResource Card}" BorderBrush="{StaticResource Line}"
+                BorderThickness="1" CornerRadius="10" Margin="0,12,0,0" Padding="12,10">
+            <StackPanel>
+                <WrapPanel>
+                    <TextBlock Text="Signature length" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="OptPatternLen" Text="16"/>
+                    <TextBlock Text="Chunk-Ø" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="OptBlockSize" Text="2048"/>
+                    <TextBlock Text="Shingle-k" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="OptShingleK" Text="8"/>
+                    <TextBlock Text="Entropy block" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="OptEntropyBlock" Text="256"/>
+                    <TextBlock Text="Minimum occurrences" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="OptMinOcc" Text="2"/>
+                </WrapPanel>
+                <WrapPanel Margin="0,10,0,0">
+                    <CheckBox x:Name="ModByteDiff" Content="Byte-Diff" IsChecked="True"/>
+                    <CheckBox x:Name="ModFuzzy" Content="Fuzzy-Hash" IsChecked="True"/>
+                    <CheckBox x:Name="ModFormat" Content="Format" IsChecked="True"/>
+                    <CheckBox x:Name="ModEntropy" Content="Entropy" IsChecked="True"/>
+                    <CheckBox x:Name="ModPatterns" Content="Patterns" IsChecked="True"/>
+                    <Button x:Name="BtnAnalyze" Content="Analyze" Click="Analyze_Click"
+                            Background="{StaticResource Accent}" Foreground="#0B1220" FontWeight="SemiBold"/>
+                    <Button x:Name="BtnJson" Content="Export JSON" Click="ExportJson_Click" IsEnabled="False"/>
+                    <Button x:Name="BtnHtml" Content="Export HTML" Click="ExportHtml_Click" IsEnabled="False"/>
+                    <TextBlock x:Name="StatusText" VerticalAlignment="Center" Style="{StaticResource MutedText}"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <TabControl x:Name="Tabs" Margin="0,12,0,0" Background="{StaticResource Card}"
+                    BorderBrush="{StaticResource Line}">
+            <TabItem Header="Overview">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel>
+                        <TextBlock x:Name="OverallText" Text="—" FontSize="46" FontWeight="Bold"
+                                   Foreground="{StaticResource Accent}"/>
+                        <TextBlock Text="Weighted overall similarity" Style="{StaticResource MutedText}"/>
+                        <ProgressBar x:Name="OverallBar" Height="14" Maximum="100" Value="0" Margin="0,8,0,0"/>
+                        <ItemsControl x:Name="WarnList" Margin="0,8,0,0" ItemTemplate="{StaticResource WarnTemplate}"/>
+                        <ItemsControl x:Name="SectionSummary" Margin="0,16,0,0">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid Margin="0,4">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="220"/>
+                                            <ColumnDefinition Width="90"/>
+                                            <ColumnDefinition/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock Grid.Column="0" Text="{Binding Title}" Foreground="{StaticResource Fg}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding ScoreText}"
+                                                   Foreground="{StaticResource Muted}"/>
+                                        <ProgressBar Grid.Column="2" Height="10" Maximum="100"
+                                                     Value="{Binding Percent, Mode=OneWay}"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Byte-Diff">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel>
+                        <ItemsControl x:Name="ByteMetrics" ItemTemplate="{StaticResource MetricTemplate}"/>
+                        <TextBlock Text="Diff map (green = shared, gray = unique)"
+                                   Style="{StaticResource MutedText}" Margin="0,14,0,4"/>
+                        <TextBlock Text="File A" Style="{StaticResource MutedText}"/>
+                        <Canvas x:Name="MapACanvas" Height="26" Background="#141A26" SizeChanged="Map_SizeChanged"/>
+                        <TextBlock Text="File B" Style="{StaticResource MutedText}" Margin="0,8,0,0"/>
+                        <Canvas x:Name="MapBCanvas" Height="26" Background="#141A26" SizeChanged="Map_SizeChanged"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Sections">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock x:Name="FormatHeader" Grid.Row="0" Style="{StaticResource MutedText}" Margin="0,0,0,8"/>
+                    <DataGrid x:Name="SectionGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Section" Binding="{Binding Name}" Width="160"/>
+                            <DataGridCheckBoxColumn Header="in A" Binding="{Binding InA}" Width="50"/>
+                            <DataGridCheckBoxColumn Header="in B" Binding="{Binding InB}" Width="50"/>
+                            <DataGridTextColumn Header="Similarity %" Binding="{Binding SimilarityPercent, StringFormat=N1}" Width="120"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock x:Name="ImportsText" Grid.Row="2" TextWrapping="Wrap"
+                               Style="{StaticResource MutedText}" Margin="0,8,0,0"/>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Patterns / signatures">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Text="Shared patterns and sequences that occur in only one file (candidate static indicators)."
+                               Style="{StaticResource MutedText}" TextWrapping="Wrap" Margin="0,0,0,8"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+                        <DockPanel Grid.Column="0" Margin="0,0,6,0">
+                            <TextBlock DockPanel.Dock="Top" Text="Shared" Margin="0,0,0,4"/>
+                            <DataGrid x:Name="CommonGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Hex" Binding="{Binding Hex}" Width="*"/>
+                                    <DataGridTextColumn Header="A" Binding="{Binding CountA}" Width="40"/>
+                                    <DataGridTextColumn Header="B" Binding="{Binding CountB}" Width="40"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                        <DockPanel Grid.Column="1" Margin="3,0">
+                            <TextBlock DockPanel.Dock="Top" Text="Only in A" Margin="0,0,0,4"/>
+                            <DataGrid x:Name="UniqueAGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Hex" Binding="{Binding Hex}" Width="*"/>
+                                    <DataGridTextColumn Header="A" Binding="{Binding CountA}" Width="40"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                        <DockPanel Grid.Column="2" Margin="6,0,0,0">
+                            <TextBlock DockPanel.Dock="Top" Text="Only in B" Margin="0,0,0,4"/>
+                            <DataGrid x:Name="UniqueBGrid" AutoGenerateColumns="False" IsReadOnly="True" HeadersVisibility="Column">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Hex" Binding="{Binding Hex}" Width="*"/>
+                                    <DataGridTextColumn Header="B" Binding="{Binding CountB}" Width="40"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header="Entropy">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="16">
+                    <StackPanel>
+                        <ItemsControl x:Name="EntropyMetrics" ItemTemplate="{StaticResource MetricTemplate}"/>
+                        <TextBlock Text="Entropy profile (blue = A, red = B; 0–8 bits/byte)"
+                                   Style="{StaticResource MutedText}" Margin="0,14,0,4"/>
+                        <Canvas x:Name="EntropyCanvas" Height="180" Background="#141A26" SizeChanged="Map_SizeChanged"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

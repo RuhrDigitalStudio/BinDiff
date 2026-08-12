@@ -1,0 +1,15 @@
+# .NET build output
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider / VS
+.vs/
+.idea/
+
+# Reports produced by the tool
+*.report.json
+*.report.html

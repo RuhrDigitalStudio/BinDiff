@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="BinDiff.Cli/BinDiff.Cli.csproj" />
+  <Project Path="BinDiff.Core/BinDiff.Core.csproj" />
+  <Project Path="BinDiff.Gui/BinDiff.Gui.csproj" />
+  <Project Path="BinDiff.Tests/BinDiff.Tests.csproj" />
+</Solution>
