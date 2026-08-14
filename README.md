@@ -9,6 +9,13 @@ It reads inputs only. BinDiff does not modify files, contact a network service,
 collect telemetry, upload data, or generate binaries. Analyze only files you
 are authorized to inspect.
 
+## Project status
+
+The current source release targets .NET 8 and keeps analysis local and
+read-only. The CLI, WPF GUI, core engine, deterministic report writers, and
+synthetic test fixtures are maintained together. There are no published binary
+releases; build from source and validate the exact revision you intend to use.
+
 ![BinDiff GUI overview](docs/images/gui-overview.png)
 
 ## Modules
@@ -137,6 +144,6 @@ BinDiff is available under the [MIT License](LICENSE). It covers the original
 source and documentation in this repository, not third-party binaries or files
 you analyze with BinDiff.
 
-Before publishing the repository, the owner must complete the provenance check
-in [release readiness](docs/release-readiness.md) and enable GitHub private
-vulnerability reporting.
+Release preparation and provenance checks are documented in
+[release readiness](docs/release-readiness.md). Passing that checklist is a
+release gate, not a claim that every environment or input has been audited.
