@@ -1,9 +1,9 @@
 # BinDiff
 
 BinDiff compares two authorized binary files on your machine. It brings byte
-layout, fuzzy hashes, PE/ELF metadata, entropy, and repeated byte patterns into
-one report so you can investigate variants, document changes, or troubleshoot
-build artifacts.
+layout, fuzzy hashes, PE/ELF structure, managed .NET metadata, entropy,
+embedded strings, and repeated byte patterns into one report so you can
+investigate variants, document changes, or troubleshoot build artifacts.
 
 It reads inputs only. BinDiff does not modify files, contact a network service,
 collect telemetry, upload data, or generate binaries. Analyze only files you
@@ -11,10 +11,10 @@ are authorized to inspect.
 
 ## Project status
 
-The current source release targets .NET 8 and keeps analysis local and
-read-only. The CLI, WPF GUI, core engine, deterministic report writers, and
-synthetic test fixtures are maintained together. There are no published binary
-releases; build from source and validate the exact revision you intend to use.
+The 2.0 release candidate targets .NET 8 and keeps analysis local and read-only.
+The CLI, WPF GUI, core engine, deterministic report writers, and synthetic test
+fixtures are maintained together. Build from source until a reviewed tag and
+its checksums appear on the Releases page.
 
 ![BinDiff GUI overview](docs/images/gui-overview.png)
 
@@ -36,6 +36,8 @@ flowchart LR
   Core --> Format["PE / ELF format"]
   Core --> Entropy["Entropy"]
   Core --> Patterns["Patterns"]
+  Core --> Strings["ASCII / UTF-16LE strings"]
+  Core --> DotNet["Managed .NET metadata"]
   Core --> Reports["Text / JSON / HTML reports"]
 ```
 
@@ -51,6 +53,11 @@ flowchart LR
   profiles.
 - Pattern analysis compares fixed-length byte sequences and lists common and
   file-specific candidate static indicators.
+- String analysis extracts bounded printable ASCII and UTF-16LE runs, then
+  reports shared and file-specific values with encoding, offsets, and counts.
+- Managed .NET analysis reads assembly identity, target framework, references,
+  types, methods, and P/Invoke declarations directly from PE metadata. It does
+  not load either assembly.
 
 Any binary data can be compared. Recognized PE and ELF files add metadata to
 the report; other formats still receive the byte, fuzzy-hash, entropy, and
@@ -102,12 +109,17 @@ Common options:
 | `--block-size <n>` | Target content-defined chunk size | 2048 |
 | `--shingle-k <n>` | Byte shingle size for MinHash | 8 |
 | `--entropy-block <n>` | Entropy block size in bytes | 256 |
-| `--modules <a,b,...>` | Select `bytediff,fuzzy,format,entropy,patterns` | all |
+| `--string-min <n>` | Minimum ASCII/UTF-16LE string length | 5 |
+| `--max-strings <n>` | Displayed strings per shared/unique category | 100 |
+| `--modules <a,b,...>` | Select `bytediff,fuzzy,format,entropy,patterns,strings,dotnet` | all |
 | `--json <path>` | Write a JSON report | — |
 | `--html <path>` | Write a standalone HTML report | — |
 
 Reports include input filenames, paths, sizes, SHA-256 hashes, and derived
-analysis output. Treat that metadata with the same care as the files themselves.
+analysis output. Extracted strings can contain internal paths, endpoints, keys,
+or other sensitive material. Review a report before sharing it and treat it
+with the same care as the files themselves. The machine-facing structure is
+documented in [the report format](docs/report-format.md).
 
 ## GUI
 
@@ -118,8 +130,10 @@ dotnet run --project BinDiff.Gui
 ```
 
 Choose or drag in two files, select the analyses and parameters, then click
-**Analyze**. The screenshot uses the synthetic `sample-a.bin` and
-`sample-b.bin` files; it contains no private path or real input.
+**Analyze**. Dedicated tabs show string changes and managed metadata changes;
+the Overview keeps each module's influence on the weighted score visible. The
+screenshot uses locally built project assemblies renamed `variant-a.dll` and
+`variant-b.dll`; it contains no private path or unknown input.
 
 ## Limitations
 
@@ -130,6 +144,10 @@ Choose or drag in two files, select the analyses and parameters, then click
   substantial memory and time.
 - PE and ELF parsing is deliberately defensive and best-effort, not a full
   disassembler or executable validator.
+- Managed metadata lists declarations. They do not prove a method is reachable
+  or that a P/Invoke is called at runtime.
+- Printable-string extraction intentionally ignores encoded, compressed,
+  encrypted, non-Latin, and short values and can include benign build metadata.
 - BinDiff compares exactly two local files per run and does not perform semantic
   code analysis, unpacking, modification, or network retrieval.
 

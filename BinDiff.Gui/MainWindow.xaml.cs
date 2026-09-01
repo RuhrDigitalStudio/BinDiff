@@ -120,7 +120,8 @@ public partial class MainWindow : Window
             ChunkAvgSize = ParseInt(OptBlockSize.Text, 2048, 8),
             ShingleK = ParseInt(OptShingleK.Text, 8, 1),
             EntropyBlockSize = ParseInt(OptEntropyBlock.Text, 256, 1),
-            MinPatternOccurrences = ParseInt(OptMinOcc.Text, 2, 1)
+            MinPatternOccurrences = ParseInt(OptMinOcc.Text, 2, 1),
+            MinStringLength = ParseInt(OptStringMin.Text, 5, 1)
         };
 
         var modules = new HashSet<AnalyzerModule>();
@@ -129,6 +130,8 @@ public partial class MainWindow : Window
         if (ModFormat.IsChecked == true) modules.Add(AnalyzerModule.Format);
         if (ModEntropy.IsChecked == true) modules.Add(AnalyzerModule.Entropy);
         if (ModPatterns.IsChecked == true) modules.Add(AnalyzerModule.Patterns);
+        if (ModStrings.IsChecked == true) modules.Add(AnalyzerModule.Strings);
+        if (ModDotNet.IsChecked == true) modules.Add(AnalyzerModule.DotNet);
         if (modules.Count > 0) o.EnabledModules = modules;
         return o;
     }
@@ -220,6 +223,16 @@ public partial class MainWindow : Window
         var ent = r.Section(AnalyzerModule.Entropy) as EntropySection;
         EntropyMetrics.ItemsSource = ent?.Metrics;
 
+        var strings = r.Section(AnalyzerModule.Strings) as StringSection;
+        StringMetrics.ItemsSource = strings?.Metrics;
+        StringCommonGrid.ItemsSource = strings?.CommonStrings;
+        StringUniqueAGrid.ItemsSource = strings?.UniqueToA;
+        StringUniqueBGrid.ItemsSource = strings?.UniqueToB;
+
+        var dotNet = r.Section(AnalyzerModule.DotNet) as DotNetSection;
+        DotNetMetrics.ItemsSource = dotNet?.Metrics;
+        DotNetChangesGrid.ItemsSource = dotNet is null ? null : MetadataChanges(dotNet);
+
         RedrawVisuals();
     }
 
@@ -285,6 +298,25 @@ public partial class MainWindow : Window
         canvas.Children.Add(line);
     }
 
+    private static List<MetadataChangeVm> MetadataChanges(DotNetSection section)
+    {
+        var changes = new List<MetadataChangeVm>();
+        Add("Reference", "Only A", section.ReferencesOnlyA);
+        Add("Reference", "Only B", section.ReferencesOnlyB);
+        Add("Type", "Only A", section.TypesOnlyA);
+        Add("Type", "Only B", section.TypesOnlyB);
+        Add("Method", "Only A", section.MethodsOnlyA);
+        Add("Method", "Only B", section.MethodsOnlyB);
+        Add("P/Invoke", "Only A", section.PInvokesOnlyA);
+        Add("P/Invoke", "Only B", section.PInvokesOnlyB);
+        return changes;
+
+        void Add(string category, string presence, IEnumerable<string> values)
+        {
+            foreach (var value in values) changes.Add(new MetadataChangeVm(category, presence, value));
+        }
+    }
+
     private void ExportJson_Click(object sender, RoutedEventArgs e) =>
         Export("JSON", "json", "JSON-Report (*.json)|*.json", p => JsonReportWriter.Write(_result!, p));
 
@@ -313,4 +345,6 @@ public partial class MainWindow : Window
     }
 
     private sealed record SectionSummaryVm(string Title, string ScoreText, double Percent);
+
+    private sealed record MetadataChangeVm(string Category, string Presence, string Value);
 }

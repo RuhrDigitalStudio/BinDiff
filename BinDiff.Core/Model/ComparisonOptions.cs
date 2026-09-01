@@ -13,7 +13,9 @@ public sealed class ComparisonOptions
         AnalyzerModule.FuzzyHash,
         AnalyzerModule.Format,
         AnalyzerModule.Entropy,
-        AnalyzerModule.Patterns
+        AnalyzerModule.Patterns,
+        AnalyzerModule.Strings,
+        AnalyzerModule.DotNet
     };
 
     // --- ByteDiff: content-defined chunking parameters ---
@@ -30,6 +32,16 @@ public sealed class ComparisonOptions
     public int MinPatternOccurrences { get; set; } = 2;
     public int MaxPatternsPerCategory { get; set; } = 50;
 
+    // --- Strings: bounded ASCII and UTF-16LE runs ---
+    public int MinStringLength { get; set; } = 5;
+    public int MaxStringLength { get; set; } = 512;
+    public int MaxExtractedStrings { get; set; } = 20_000;
+    public int MaxReportedStrings { get; set; } = 100;
+
+    // --- Managed .NET metadata ---
+    public int MaxMetadataItems { get; set; } = 20_000;
+    public int MaxReportedMetadataItems { get; set; } = 250;
+
     // --- Entropy ---
     public int EntropyBlockSize { get; set; } = 256;
     public int MaxEntropyProfilePoints { get; set; } = 512; // downsample cap for GUI/report curves
@@ -42,7 +54,9 @@ public sealed class ComparisonOptions
         [AnalyzerModule.FuzzyHash] = 1.0,
         [AnalyzerModule.Format] = 1.0,
         [AnalyzerModule.Entropy] = 0.5,
-        [AnalyzerModule.Patterns] = 0.5
+        [AnalyzerModule.Patterns] = 0.5,
+        [AnalyzerModule.Strings] = 0.75,
+        [AnalyzerModule.DotNet] = 1.0
     };
 
     /// <summary>Warn (not fail) when an input exceeds this size, in bytes. 0 disables the warning.</summary>

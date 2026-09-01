@@ -13,6 +13,8 @@ namespace BinDiff.Core.Model;
 [JsonDerivedType(typeof(FormatSection), "format")]
 [JsonDerivedType(typeof(EntropySection), "entropy")]
 [JsonDerivedType(typeof(PatternSection), "patterns")]
+[JsonDerivedType(typeof(StringSection), "strings")]
+[JsonDerivedType(typeof(DotNetSection), "dotNet")]
 [JsonDerivedType(typeof(ErrorSection), "error")]
 public interface IAnalysisSection
 {

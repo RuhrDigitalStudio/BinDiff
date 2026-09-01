@@ -2,8 +2,8 @@
 
 ## Supported versions
 
-Security fixes are made against the current default branch. This repository has
-not published versioned releases yet.
+Security fixes are made against the newest published release-candidate line.
+Old source snapshots are not maintained.
 
 ## Reporting a vulnerability
 
@@ -35,3 +35,19 @@ disclosure.
 BinDiff is intended to read local files only. Reports that identify unsafe
 parsing, unbounded resource use, unexpected file modification, or an unintended
 network interaction are particularly useful.
+
+The following are security invariants:
+
+- Managed assemblies are parsed as bytes and metadata; they are never loaded,
+  resolved, or executed.
+- Analyzer loops, extracted strings, metadata collections, profiles, and report
+  tables remain bounded for attacker-controlled input.
+- HTML output encodes filenames, paths, warnings, metadata, and extracted text
+  and contains no scripts or external resources.
+- One analyzer failure remains isolated and cannot turn the other results into
+  a clean or identical claim.
+- Inputs are never rewritten, patched, deleted, uploaded, or quarantined.
+
+JSON and HTML reports can contain sensitive strings and local paths derived
+from the inputs. That expected disclosure is documented behavior; leaking the
+data anywhere other than the user-selected local report is not.

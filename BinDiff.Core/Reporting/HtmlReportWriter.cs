@@ -110,6 +110,12 @@ th{color:var(--muted);font-weight:600}
             case PatternSection ps:
                 sb.Append(PatternTables(ps));
                 break;
+            case StringSection strings:
+                sb.Append(StringTables(strings));
+                break;
+            case DotNetSection dotNet when dotNet.Applicable:
+                sb.Append(DotNetTables(dotNet));
+                break;
         }
         sb.Append("</div>");
         return sb.ToString();
@@ -190,6 +196,48 @@ th{color:var(--muted);font-weight:600}
              + Table("Only in A (candidate indicators)", ps.UniqueToA)
              + Table("Only in B (candidate indicators)", ps.UniqueToB);
     }
+
+    private static string StringTables(StringSection section)
+    {
+        string Table(string title, List<StringHit> hits)
+        {
+            var sb = new StringBuilder($"<div><div class=\"muted\" style=\"margin-top:10px\">{E(title)} ({hits.Count})</div><div class=\"overflow\"><table>");
+            sb.Append("<tr><th>Value</th><th>Encoding</th><th>Offset A</th><th>Offset B</th><th>Count A/B</th></tr>");
+            foreach (var hit in hits.Take(50))
+                sb.Append($"<tr><td class=\"mono\">{E(hit.Value)}</td><td>{E(hit.Encoding)}</td>" +
+                          $"<td>{Offset(hit.FirstOffsetA)}</td><td>{Offset(hit.FirstOffsetB)}</td>" +
+                          $"<td>{hit.CountA}/{hit.CountB}</td></tr>");
+            sb.Append("</table></div></div>");
+            return sb.ToString();
+        }
+        return Table("Shared strings", section.CommonStrings)
+             + Table("Strings only in A", section.UniqueToA)
+             + Table("Strings only in B", section.UniqueToB);
+    }
+
+    private static string DotNetTables(DotNetSection section)
+    {
+        string ListTable(string title, List<string> common, List<string> onlyA, List<string> onlyB)
+        {
+            var count = Math.Max(common.Count, Math.Max(onlyA.Count, onlyB.Count));
+            var sb = new StringBuilder($"<div class=\"muted\" style=\"margin-top:12px\">{E(title)}</div><div class=\"overflow\"><table>");
+            sb.Append($"<tr><th>Shared {E(title)}</th><th>{E(title)} only in A</th><th>{E(title)} only in B</th></tr>");
+            for (var i = 0; i < Math.Min(count, 50); i++)
+                sb.Append($"<tr><td class=\"mono\">{E(At(common, i))}</td>" +
+                          $"<td class=\"mono\">{E(At(onlyA, i))}</td><td class=\"mono\">{E(At(onlyB, i))}</td></tr>");
+            sb.Append("</table></div>");
+            return sb.ToString();
+        }
+
+        return ListTable("Assembly references", section.ReferencesCommon, section.ReferencesOnlyA, section.ReferencesOnlyB)
+             + ListTable("Types", section.TypesCommon, section.TypesOnlyA, section.TypesOnlyB)
+             + ListTable("Methods", section.MethodsCommon, section.MethodsOnlyA, section.MethodsOnlyB)
+             + ListTable("P/Invoke", section.PInvokesCommon, section.PInvokesOnlyA, section.PInvokesOnlyB);
+    }
+
+    private static string At(IReadOnlyList<string> values, int index) => index < values.Count ? values[index] : "";
+
+    private static string Offset(long value) => value < 0 ? "-" : $"0x{value:X}";
 
     private static string E(string? s) => WebUtility.HtmlEncode(s ?? "");
 }
