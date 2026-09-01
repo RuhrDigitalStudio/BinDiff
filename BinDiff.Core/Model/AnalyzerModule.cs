@@ -10,5 +10,7 @@ public enum AnalyzerModule
     FuzzyHash,
     Format,
     Entropy,
-    Patterns
+    Patterns,
+    Strings,
+    DotNet
 }

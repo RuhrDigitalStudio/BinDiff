@@ -202,3 +202,82 @@ public sealed class PatternSection : IAnalysisSection
         new("Only in B (indicators)", Fmt.Int(UniqueToB.Count))
     };
 }
+
+public sealed class StringHit
+{
+    public string Value { get; set; } = "";
+    public string Encoding { get; set; } = "";
+    public long FirstOffsetA { get; set; } = -1;
+    public long FirstOffsetB { get; set; } = -1;
+    public int CountA { get; set; }
+    public int CountB { get; set; }
+}
+
+public sealed class StringSection : IAnalysisSection
+{
+    public AnalyzerModule Module => AnalyzerModule.Strings;
+    public string Title => "Extracted strings";
+    public double? SimilarityPercent { get; set; }
+    public string? Error { get; set; }
+    public int MinimumLength { get; set; }
+    public int DistinctStringsA { get; set; }
+    public int DistinctStringsB { get; set; }
+    public List<StringHit> CommonStrings { get; set; } = new();
+    public List<StringHit> UniqueToA { get; set; } = new();
+    public List<StringHit> UniqueToB { get; set; } = new();
+
+    public IReadOnlyList<KeyValuePair<string, string>> Metrics => new List<KeyValuePair<string, string>>
+    {
+        new("String-set similarity", Fmt.Pct(SimilarityPercent)),
+        new("Minimum length", Fmt.Int(MinimumLength)),
+        new("Distinct strings A / B", $"{Fmt.Int(DistinctStringsA)} / {Fmt.Int(DistinctStringsB)}"),
+        new("Reported shared strings", Fmt.Int(CommonStrings.Count)),
+        new("Reported only in A / B", $"{Fmt.Int(UniqueToA.Count)} / {Fmt.Int(UniqueToB.Count)}")
+    };
+}
+
+public sealed class DotNetProfile
+{
+    public string AssemblyName { get; set; } = "";
+    public string AssemblyVersion { get; set; } = "";
+    public string TargetFramework { get; set; } = "";
+    public bool Truncated { get; set; }
+    public List<string> AssemblyReferences { get; set; } = new();
+    public List<string> Types { get; set; } = new();
+    public List<string> Methods { get; set; } = new();
+    public List<string> PInvokes { get; set; } = new();
+}
+
+public sealed class DotNetSection : IAnalysisSection
+{
+    public AnalyzerModule Module => AnalyzerModule.DotNet;
+    public string Title => "Managed .NET metadata";
+    public double? SimilarityPercent { get; set; }
+    public string? Error { get; set; }
+    public bool Applicable { get; set; }
+    public DotNetProfile? A { get; set; }
+    public DotNetProfile? B { get; set; }
+    public List<string> ReferencesCommon { get; set; } = new();
+    public List<string> ReferencesOnlyA { get; set; } = new();
+    public List<string> ReferencesOnlyB { get; set; } = new();
+    public List<string> TypesCommon { get; set; } = new();
+    public List<string> TypesOnlyA { get; set; } = new();
+    public List<string> TypesOnlyB { get; set; } = new();
+    public List<string> MethodsCommon { get; set; } = new();
+    public List<string> MethodsOnlyA { get; set; } = new();
+    public List<string> MethodsOnlyB { get; set; } = new();
+    public List<string> PInvokesCommon { get; set; } = new();
+    public List<string> PInvokesOnlyA { get; set; } = new();
+    public List<string> PInvokesOnlyB { get; set; } = new();
+
+    public IReadOnlyList<KeyValuePair<string, string>> Metrics => new List<KeyValuePair<string, string>>
+    {
+        new("Managed metadata similarity", Fmt.Pct(SimilarityPercent)),
+        new("Assembly A / B", $"{A?.AssemblyName ?? "native or unknown"} / {B?.AssemblyName ?? "native or unknown"}"),
+        new("Version A / B", $"{A?.AssemblyVersion ?? "-"} / {B?.AssemblyVersion ?? "-"}"),
+        new("Target framework A / B", $"{A?.TargetFramework ?? "-"} / {B?.TargetFramework ?? "-"}"),
+        new("Shared references / types / methods", $"{ReferencesCommon.Count} / {TypesCommon.Count} / {MethodsCommon.Count}"),
+        new("P/Invoke only in A / B", $"{PInvokesOnlyA.Count} / {PInvokesOnlyB.Count}"),
+        new("Metadata truncated A / B", $"{A?.Truncated ?? false} / {B?.Truncated ?? false}")
+    };
+}

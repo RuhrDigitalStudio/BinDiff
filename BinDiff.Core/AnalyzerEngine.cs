@@ -27,7 +27,9 @@ public sealed class AnalyzerEngine
         new FuzzyHashAnalyzer(),
         new FormatAnalyzer(),
         new EntropyAnalyzer(),
-        new PatternAnalyzer()
+        new PatternAnalyzer(),
+        new StringAnalyzer(),
+        new DotNetAnalyzer()
     };
 
     /// <summary>Loads both files from disk (read-only) and compares them.</summary>
