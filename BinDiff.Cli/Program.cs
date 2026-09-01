@@ -79,6 +79,8 @@ static class CliArgs
                 case "--block-size": p.Options.ChunkAvgSize = Int(Next(args, ref i, a, p), p, a, 8); break;
                 case "--shingle-k": p.Options.ShingleK = Int(Next(args, ref i, a, p), p, a, 1); break;
                 case "--entropy-block": p.Options.EntropyBlockSize = Int(Next(args, ref i, a, p), p, a, 1); break;
+                case "--string-min": p.Options.MinStringLength = Int(Next(args, ref i, a, p), p, a, 1); break;
+                case "--max-strings": p.Options.MaxReportedStrings = Int(Next(args, ref i, a, p), p, a, 0); break;
                 case "--modules": ParseModules(Next(args, ref i, a, p), p); break;
                 default:
                     if (a.StartsWith('-')) p.Error ??= $"Unknown option: {a}";
@@ -128,6 +130,8 @@ static class CliArgs
                 case "format" or "pe" or "elf": set.Add(AnalyzerModule.Format); break;
                 case "entropy": set.Add(AnalyzerModule.Entropy); break;
                 case "patterns" or "pattern" or "sig": set.Add(AnalyzerModule.Patterns); break;
+                case "strings" or "string" or "text": set.Add(AnalyzerModule.Strings); break;
+                case "dotnet" or "managed" or "clr": set.Add(AnalyzerModule.DotNet); break;
                 default: p.Error = $"Unknown module: {raw}"; return;
             }
         }
@@ -150,7 +154,9 @@ Options:
   --block-size <n>       target CDC chunk size in bytes (default 2048)
   --shingle-k <n>        MinHash k-gram size (default 8)
   --entropy-block <n>    entropy block size in bytes (default 256)
-  --modules <a,b,...>    run only these: bytediff,fuzzy,format,entropy,patterns
+  --string-min <n>       minimum ASCII/UTF-16 string length (default 5)
+  --max-strings <n>      maximum displayed strings per category (default 100)
+  --modules <a,b,...>    run only: bytediff,fuzzy,format,entropy,patterns,strings,dotnet
   -h, --help             show this help
 
 Example:

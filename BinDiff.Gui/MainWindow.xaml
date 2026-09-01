@@ -187,6 +187,8 @@
                     <TextBox x:Name="OptEntropyBlock" Text="256"/>
                     <TextBlock Text="Minimum occurrences" VerticalAlignment="Center" Margin="0,0,6,0"/>
                     <TextBox x:Name="OptMinOcc" Text="2"/>
+                    <TextBlock Text="Minimum string" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="OptStringMin" Text="5"/>
                 </WrapPanel>
                 <WrapPanel Margin="0,10,0,0">
                     <CheckBox x:Name="ModByteDiff" Content="Byte-Diff" IsChecked="True"/>
@@ -194,6 +196,8 @@
                     <CheckBox x:Name="ModFormat" Content="Format" IsChecked="True"/>
                     <CheckBox x:Name="ModEntropy" Content="Entropy" IsChecked="True"/>
                     <CheckBox x:Name="ModPatterns" Content="Patterns" IsChecked="True"/>
+                    <CheckBox x:Name="ModStrings" Content="Strings" IsChecked="True"/>
+                    <CheckBox x:Name="ModDotNet" Content=".NET metadata" IsChecked="True"/>
                     <Button x:Name="BtnAnalyze" Content="Analyze" Click="Analyze_Click"
                             Background="{StaticResource Accent}" Foreground="#0B1220" FontWeight="SemiBold"/>
                     <Button x:Name="BtnJson" Content="Export JSON" Click="ExportJson_Click" IsEnabled="False"/>
@@ -326,6 +330,63 @@
                         <Canvas x:Name="EntropyCanvas" Height="180" Background="#141A26" SizeChanged="Map_SizeChanged"/>
                     </StackPanel>
                 </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Strings">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <ItemsControl x:Name="StringMetrics" ItemTemplate="{StaticResource MetricTemplate}" Margin="0,0,0,10"/>
+                    <Grid Grid.Row="1">
+                        <Grid.ColumnDefinitions><ColumnDefinition/><ColumnDefinition/><ColumnDefinition/></Grid.ColumnDefinitions>
+                        <DockPanel Grid.Column="0" Margin="0,0,6,0">
+                            <TextBlock DockPanel.Dock="Top" Text="Shared" Margin="0,0,0,4"/>
+                            <DataGrid x:Name="StringCommonGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
+                                    <DataGridTextColumn Header="Encoding" Binding="{Binding Encoding}" Width="75"/>
+                                    <DataGridTextColumn Header="A/B" Binding="{Binding CountA}" Width="38"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                        <DockPanel Grid.Column="1" Margin="3,0">
+                            <TextBlock DockPanel.Dock="Top" Text="Only in A" Margin="0,0,0,4"/>
+                            <DataGrid x:Name="StringUniqueAGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
+                                    <DataGridTextColumn Header="Encoding" Binding="{Binding Encoding}" Width="75"/>
+                                    <DataGridTextColumn Header="Offset" Binding="{Binding FirstOffsetA, StringFormat={}{0:X}}" Width="65"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                        <DockPanel Grid.Column="2" Margin="6,0,0,0">
+                            <TextBlock DockPanel.Dock="Top" Text="Only in B" Margin="0,0,0,4"/>
+                            <DataGrid x:Name="StringUniqueBGrid" AutoGenerateColumns="False" IsReadOnly="True">
+                                <DataGrid.Columns>
+                                    <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*"/>
+                                    <DataGridTextColumn Header="Encoding" Binding="{Binding Encoding}" Width="75"/>
+                                    <DataGridTextColumn Header="Offset" Binding="{Binding FirstOffsetB, StringFormat={}{0:X}}" Width="65"/>
+                                </DataGrid.Columns>
+                            </DataGrid>
+                        </DockPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <TabItem Header=".NET metadata">
+                <Grid Margin="16">
+                    <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <ItemsControl x:Name="DotNetMetrics" ItemTemplate="{StaticResource MetricTemplate}" Margin="0,0,0,10"/>
+                    <DataGrid x:Name="DotNetChangesGrid" Grid.Row="1" AutoGenerateColumns="False" IsReadOnly="True">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Category" Binding="{Binding Category}" Width="130"/>
+                            <DataGridTextColumn Header="Presence" Binding="{Binding Presence}" Width="90"/>
+                            <DataGridTextColumn Header="Metadata value" Binding="{Binding Value}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
             </TabItem>
         </TabControl>
     </DockPanel>
