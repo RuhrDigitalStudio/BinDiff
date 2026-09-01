@@ -19,12 +19,20 @@ Thanks for helping improve a defensive, local-only analysis tool.
 4. Run the complete local quality gate from the repository root:
 
    ```powershell
-   dotnet build BinDiff.slnx
-   dotnet test BinDiff.Tests/BinDiff.Tests.csproj
-   dotnet format BinDiff.slnx --verify-no-changes
+   dotnet restore BinDiff.slnx
+   dotnet build BinDiff.slnx -c Release --no-restore
+   dotnet test BinDiff.Tests/BinDiff.Tests.csproj -c Release --no-build
+   dotnet format BinDiff.slnx --verify-no-changes --no-restore
+   git diff --check
    ```
 
 5. Explain the safety and compatibility impact in the pull request.
+
+Analyzer tests should cover identical inputs, clearly different inputs, empty
+data, a close benign case, malformed structure, and every new resource bound.
+Report changes need a JSON concrete-field check and an HTML-encoding check for
+untrusted values. Managed tests must use synthetic or project-owned assemblies
+and must not introduce executable samples into source control.
 
 ## Reporting bugs and proposing features
 
