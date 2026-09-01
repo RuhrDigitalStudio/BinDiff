@@ -17,11 +17,15 @@ public sealed class StringAnalyzer : IAnalyzer
             var maximum = Math.Clamp(options.MaxStringLength, minimum, 16_384);
             var extractedLimit = Math.Clamp(options.MaxExtractedStrings, 1, 1_000_000);
             var reportLimit = Math.Clamp(options.MaxReportedStrings, 0, 10_000);
-            var stringsA = Extract(a.Data, minimum, maximum, extractedLimit);
-            var stringsB = Extract(b.Data, minimum, maximum, extractedLimit);
+            var extractedA = Extract(a.Data, minimum, maximum, extractedLimit);
+            var extractedB = Extract(b.Data, minimum, maximum, extractedLimit);
+            var stringsA = extractedA.Values;
+            var stringsB = extractedB.Values;
             section.MinimumLength = minimum;
             section.DistinctStringsA = stringsA.Count;
             section.DistinctStringsB = stringsB.Count;
+            section.TruncatedA = extractedA.Truncated;
+            section.TruncatedB = extractedB.Truncated;
 
             var keysA = stringsA.Keys.ToHashSet();
             var keysB = stringsB.Keys.ToHashSet();
@@ -39,17 +43,18 @@ public sealed class StringAnalyzer : IAnalyzer
         }
     }
 
-    private static Dictionary<StringKey, Occurrence> Extract(
+    private static ExtractionResult Extract(
         byte[] data, int minimum, int maximum, int distinctLimit)
     {
         var values = new Dictionary<StringKey, Occurrence>();
-        ExtractAscii(data, minimum, maximum, distinctLimit, values);
-        ExtractUtf16(data, minimum, maximum, distinctLimit, values);
-        return values;
+        var truncated = false;
+        ExtractAscii(data, minimum, maximum, distinctLimit, values, ref truncated);
+        ExtractUtf16(data, minimum, maximum, distinctLimit, values, ref truncated);
+        return new ExtractionResult(values, truncated);
     }
 
     private static void ExtractAscii(byte[] data, int minimum, int maximum, int limit,
-        Dictionary<StringKey, Occurrence> values)
+        Dictionary<StringKey, Occurrence> values, ref bool truncated)
     {
         var start = 0;
         while (start < data.Length)
@@ -60,14 +65,15 @@ public sealed class StringAnalyzer : IAnalyzer
             if (end - start >= minimum)
             {
                 var length = Math.Min(end - start, maximum);
-                Add(values, new StringKey("ASCII", Encoding.ASCII.GetString(data, start, length)), start, limit);
+                Add(values, new StringKey("ASCII", Encoding.ASCII.GetString(data, start, length)), start, limit,
+                    ref truncated);
             }
             start = Math.Max(end, start + 1);
         }
     }
 
     private static void ExtractUtf16(byte[] data, int minimum, int maximum, int limit,
-        Dictionary<StringKey, Occurrence> values)
+        Dictionary<StringKey, Occurrence> values, ref bool truncated)
     {
         for (var alignment = 0; alignment < 2; alignment++)
         {
@@ -81,14 +87,16 @@ public sealed class StringAnalyzer : IAnalyzer
                 if (characters >= minimum)
                 {
                     var length = Math.Min(characters, maximum) * 2;
-                    Add(values, new StringKey("UTF-16LE", Encoding.Unicode.GetString(data, start, length)), start, limit);
+                    Add(values, new StringKey("UTF-16LE", Encoding.Unicode.GetString(data, start, length)), start, limit,
+                        ref truncated);
                 }
                 start = Math.Max(end, start + 2);
             }
         }
     }
 
-    private static void Add(Dictionary<StringKey, Occurrence> values, StringKey key, long offset, int limit)
+    private static void Add(
+        Dictionary<StringKey, Occurrence> values, StringKey key, long offset, int limit, ref bool truncated)
     {
         if (values.TryGetValue(key, out var occurrence))
         {
@@ -96,6 +104,7 @@ public sealed class StringAnalyzer : IAnalyzer
             return;
         }
         if (values.Count < limit) values[key] = new Occurrence(offset);
+        else truncated = true;
     }
 
     private static List<StringHit> Select(
@@ -128,6 +137,8 @@ public sealed class StringAnalyzer : IAnalyzer
         PrintableUtf16(data, offset) && (offset == alignment || offset == 0 || !Printable(data[offset - 1]));
 
     private readonly record struct StringKey(string Encoding, string Value);
+
+    private sealed record ExtractionResult(Dictionary<StringKey, Occurrence> Values, bool Truncated);
 
     private sealed class Occurrence(long offset)
     {

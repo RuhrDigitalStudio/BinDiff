@@ -69,7 +69,10 @@ public sealed class DotNetAnalyzer : IAnalyzer
             foreach (var methodHandle in type.GetMethods())
             {
                 var method = reader.GetMethodDefinition(methodHandle);
-                var methodName = $"{typeName}::{reader.GetString(method.Name)}";
+                var parameterCount = method.GetParameters()
+                    .Count(parameter => reader.GetParameter(parameter).SequenceNumber > 0);
+                var genericCount = method.GetGenericParameters().Count;
+                var methodName = $"{typeName}::{reader.GetString(method.Name)}(params {parameterCount}, generic {genericCount})";
                 Add(profile.Methods, methodName, limit, profile);
                 if ((method.Attributes & MethodAttributes.PinvokeImpl) == 0) continue;
                 var import = method.GetImport();

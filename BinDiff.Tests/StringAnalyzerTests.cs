@@ -40,6 +40,7 @@ public sealed class StringAnalyzerTests
         var result = (StringSection)new StringAnalyzer().Analyze(a, Image("b", []), options);
 
         Assert.Equal(2, result.DistinctStringsA);
+        Assert.True(result.TruncatedA);
         Assert.Single(result.UniqueToA);
         Assert.Equal(6, result.UniqueToA[0].Value.Length);
     }

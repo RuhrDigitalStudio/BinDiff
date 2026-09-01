@@ -222,6 +222,8 @@ public sealed class StringSection : IAnalysisSection
     public int MinimumLength { get; set; }
     public int DistinctStringsA { get; set; }
     public int DistinctStringsB { get; set; }
+    public bool TruncatedA { get; set; }
+    public bool TruncatedB { get; set; }
     public List<StringHit> CommonStrings { get; set; } = new();
     public List<StringHit> UniqueToA { get; set; } = new();
     public List<StringHit> UniqueToB { get; set; } = new();
@@ -231,6 +233,7 @@ public sealed class StringSection : IAnalysisSection
         new("String-set similarity", Fmt.Pct(SimilarityPercent)),
         new("Minimum length", Fmt.Int(MinimumLength)),
         new("Distinct strings A / B", $"{Fmt.Int(DistinctStringsA)} / {Fmt.Int(DistinctStringsB)}"),
+        new("Extraction truncated A / B", $"{TruncatedA} / {TruncatedB}"),
         new("Reported shared strings", Fmt.Int(CommonStrings.Count)),
         new("Reported only in A / B", $"{Fmt.Int(UniqueToA.Count)} / {Fmt.Int(UniqueToB.Count)}")
     };
